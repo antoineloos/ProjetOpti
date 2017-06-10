@@ -5,6 +5,7 @@
  */
 package projet_opti;
 
+import algorithmes.Genetique;
 import algorithmes.Recuit;
 import algorithmes.Tabou;
 import java.io.IOException;
@@ -35,11 +36,38 @@ public class Projet_Opti {
                 startTabou();
                 break;
             case 3:
+                startGenetique();
+                
                 break;
             default:
                 System.out.println("votre demande n'est pas correcte");
         }
 
+    }
+    
+    public static void startGenetique()
+    {
+        int GridSize = 50;
+        int nbLancement = 1;
+
+        long[] lstElapsedTime = new long[nbLancement];
+        long moyenne = 0;
+        for (int i = 0; i < nbLancement; i++) {
+            Genetique g = new Genetique(GridSize);
+            long startTime = System.currentTimeMillis();
+            Pair res = g.ComputeGenetique();
+            long estimatedTime = System.currentTimeMillis() - startTime;
+            lstElapsedTime[i] = estimatedTime;
+            // System.out.println("fitness : " + res.getKey() + " time ellapsed : " + String.valueOf(estimatedTime / 1000.0) + " solution : " + Arrays.toString((int[]) res.getValue()));
+            System.out.println("fitness : " + res.getKey() + " time ellapsed : " + String.valueOf(estimatedTime / 1000.0));
+
+        }
+
+        for (long l : lstElapsedTime) {
+            moyenne += l;
+        }
+
+        System.out.println("moyenne de temps pour recuit : " + String.valueOf(moyenne / (float) nbLancement / 1000.0));
     }
 
     public static void startTabou() {
