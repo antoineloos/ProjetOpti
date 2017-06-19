@@ -26,10 +26,10 @@ public class Recuit {
     private int[] plateau;
     private int[] solution;
 
-    public Recuit(int[] plateau) {
-        this.plateauSize = plateau.length;
+    public Recuit(int[] plt) {
+        this.plateauSize = plt.length;
        
-       plateau = AlgoHelper.CreateNewPlateauStd(plateauSize);
+        this.plateau = plt;
         solution = plateau.clone();
         temperature = calculInitialTemperature();
        

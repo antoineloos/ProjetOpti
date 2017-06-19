@@ -19,11 +19,11 @@ import utils.AlgoHelper;
  * @author Epulapp
  */
 public class Genetique{
-   private final int NB_INDIVDU_SELECTIONNE = 100;
-    private final double PROBA_MUTATION = 0.10;
-    private final int NB_ITERATION = 10000000;
-    private final int SIZE_POPULATION = 500;
-    private final boolean WITH_CORRECTION = false;
+   private final int nbSelection = 50;
+    private final double probaMutation = 0.10;
+    private final int nbIterMax = 100000;
+    private final int populationSize = 100;
+    
 
     private int[] bestPlateau;
     private Random random;
@@ -52,8 +52,8 @@ public class Genetique{
     }
 
     public Pair ComputeGenetique() {
-        List<int[]> population = createInitialPopulation(SIZE_POPULATION);
-        for (int i = 0; i < NB_ITERATION; i++) {
+        List<int[]> population = createInitialPopulation(populationSize);
+        for (int i = 0; i < nbIterMax; i++) {
             population = nextGeneration(population);
             if (AlgoHelper.computeConfict(bestPlateau) == 0) {
                 System.out.println("nb iter : " + i);
@@ -94,12 +94,12 @@ public class Genetique{
 
     private List<int[]> nextGeneration(List<int[]> population) {
         List<int[]> newGeneration = new ArrayList<>();
-        List<int[]> selectedPopulation = selectPopulation(population, NB_INDIVDU_SELECTIONNE);
+        List<int[]> selectedPopulation = selectPopulation(population, nbSelection);
 
         for (int i = 0; i < selectedPopulation.size(); i += 2) {
             int[] plateau1 = selectedPopulation.get(i);
             int[] plateau2 = selectedPopulation.get(i + 1);
-            List<int[]> enfants = croisePlateaux(plateau1, plateau2);
+            List<int[]> enfants = croiser(plateau1, plateau2);
             for (int[] enfant : enfants) {
                 if (AlgoHelper.computeConfict(enfant) < AlgoHelper.computeConfict(bestPlateau)) {
                     bestPlateau = enfant;
@@ -112,18 +112,18 @@ public class Genetique{
         }
 
         for (int[] plateau : population) {
-            if (newGeneration.size() >= SIZE_POPULATION) break;
+            if (newGeneration.size() >= populationSize) break;
             newGeneration.add(plateau);
         }
-        newGeneration = muteGeneration(newGeneration);
+        newGeneration = muter(newGeneration);
         return newGeneration;
     }
 
-    private List<int[]> muteGeneration(List<int[]> population) {
+    private List<int[]> muter(List<int[]> population) {
         for (int i = 0; i < population.size(); i++) {
             //Mutation d'un individu selon la probabilité choisie, si mutation on choisit un voisin
             double randomDouble = random.nextDouble();
-            if (randomDouble < PROBA_MUTATION) {
+            if (randomDouble < probaMutation) {
                 int[] plateau = AlgoHelper.getVoisins(population.get(i));
                 population.set(i, plateau);
                 if (AlgoHelper.computeConfict(plateau) < AlgoHelper.computeConfict(bestPlateau)) {
@@ -135,7 +135,7 @@ public class Genetique{
         return population;
     }
 
-    private List<int[]> croisePlateaux(int[] plateau1, int[] plateau2) {
+    private List<int[]> croiser(int[] plateau1, int[] plateau2) {
         ArrayList<int[]> enfants = new ArrayList<int[]>();
         int[] enfant1, enfant2;
         Random random = new Random();
@@ -145,24 +145,21 @@ public class Genetique{
         int[] enfant1Array = new int[plateauSize];
         int[] enfant2Array = new int[plateauSize];
 
-        //Découpe des parents
+        
         int[] plateau1part1 = Arrays.copyOfRange(plateau1, 0, rnd + 1);
         int[] plateau1part2 = Arrays.copyOfRange(plateau1, rnd + 1, plateauSize);
         int[] plateau2part1 = Arrays.copyOfRange(plateau2, 0, rnd + 1);
         int[] plateau2part2 = Arrays.copyOfRange(plateau2, rnd + 1, plateauSize);
 
-        //Fusion des 2 parties pour le premier enfant
+        
         System.arraycopy(plateau1part1, 0, enfant1Array, 0, rnd + 1);
         System.arraycopy(plateau2part2, 0, enfant1Array, rnd + 1, plateauSize - rnd - 1);
 
-        //Fusion des 2 parties pour le deuxième enfant
+        
         System.arraycopy(plateau2part1, 0, enfant2Array, 0, rnd + 1);
         System.arraycopy(plateau1part2, 0, enfant2Array, rnd + 1, plateauSize - rnd - 1);
 
-        if (WITH_CORRECTION) {
-            enfant1Array = corrigePlateauArray(enfant1Array);
-            enfant2Array = corrigePlateauArray(enfant2Array);
-        }
+     
 
         enfant1 = enfant1Array;
         enfant2 = enfant2Array;
@@ -173,42 +170,5 @@ public class Genetique{
     }
 
 
-    private int[] corrigePlateauArray(int[] plateauArray) {
-        int[] sortedArray = plateauArray.clone();
-        Arrays.sort(sortedArray);
-        int current = -1;
-        List<Integer> doublons = new ArrayList<>();
-        List<Integer> manquants = new ArrayList<>();
 
-        for (int value : sortedArray) {
-            if (value == current) {
-                doublons.add(current);
-            } else if (value > current + 1) {
-                while (value > current + 1) {
-                    manquants.add(current + 1);
-                    current++;
-                }
-                current++;
-            } else {
-                current++;
-            }
-        }
-
-        if (sortedArray[plateauSize - 1] < plateauSize - 1) {
-            for (int x = sortedArray[plateauSize - 1]; x < plateauSize - 1; x++) {
-                manquants.add(x);
-            }
-        }
-
-        if (doublons.isEmpty()) return plateauArray;
-        int index;
-        for (int i = 0; i < plateauArray.length; i++) {
-            index = doublons.indexOf(plateauArray[i]);
-            if (index > -1) {
-                doublons.remove(index);
-                plateauArray[i] = manquants.remove(0);
-            }
-        }
-        return plateauArray;
-    }
 }
